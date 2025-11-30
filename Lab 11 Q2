@@ -14,148 +14,159 @@ struct bank {
         float withdrawal;
         float deposit;
         time_t transectime;
-    }transec[20];
+    } transec[20];
 };
 
-void accountdata(struct bank account[], int a) {
+int totalAccounts = 0;
+
+void accountdata(struct bank account[]) {
+    if (totalAccounts >= 100) { 
+        printf("Bank limit reached.\n");
+        return;
+    }
+
+    int a = totalAccounts;
+    totalAccounts++;
+
+    account[a].transecCount = 0;
+
+    printf("Enter Account number: ");
+    scanf("%d", &account[a].accnumber);
+
     int acct;
-    
-    account[a].transecCount=0;
-    printf("Enter Account number :");
-    scanf("%d",&account[a].accnumber);
-    printf("Enter account Type: \n(1) Savings.\n(2) Current.\n(3) Fixed Deposit\n");
+    printf("Enter account Type: \n(1) Savings\n(2) Current\n(3) Fixed Deposit\nChoice: ");
     scanf("%d", &acct);
+
     switch(acct) {
         case 1:
             strcpy(account[a].type, "Savings");
-            account[a].minbalance=1000;
-            account[a].interestrate=0.04;
-            account[a].createdate=time(NULL);
+            account[a].minbalance = 1000;
+            account[a].interestrate = 0.04;
             break;
-
         case 2:
             strcpy(account[a].type, "Current");
-            account[a].minbalance=5000;
-            account[a].interestrate=0.07;
-            account[a].createdate=time(NULL);
+            account[a].minbalance = 5000;
+            account[a].interestrate = 0.07;
             break;
-
         case 3:
             strcpy(account[a].type, "Fixed Deposit");
-            account[a].minbalance=10000;
-            account[a].interestrate=0;
-            account[a].createdate=time(NULL);
+            account[a].minbalance = 10000;
+            account[a].interestrate = 0;
             break;
-
         default:
-            printf("Invalid choice.\n");
+            printf("Invalid choice. Setting to Savings by default.\n");
+            strcpy(account[a].type, "Savings");
+            account[a].minbalance = 1000;
+            account[a].interestrate = 0.04;
+            break;
     }
-    
+
+    account[a].createdate = time(NULL);
+    printf("Account Created Successfully!\n");
 }
-void Mdeposit(struct bank account[],int noofaccs){
+
+void Mdeposit(struct bank account[]) {
     int Saccnumber;
     float depamount;
-    printf("Enter the account number :");
-    scanf("%d",&Saccnumber);
-    for (int i=0;i<noofaccs;i++){
-        if(account[i].accnumber==Saccnumber){
-            printf("Enter the amount to Deposit :");
-            scanf("%f",&depamount);
-                account[i].minbalance+=depamount;
-                account[i].transec[account[i].transecCount].deposit=depamount;
-                account[i].transec[account[i].transecCount].transectime=time(NULL);
-                account[i].transecCount++;
-                break;
+    printf("Enter the account number: ");
+    scanf("%d", &Saccnumber);
+
+    int found = 0;
+    for(int i = 0; i < totalAccounts; i++) {
+        if(account[i].accnumber == Saccnumber) {
+            found = 1;
+            printf("Enter the amount to deposit: ");
+            scanf("%f", &depamount);
+
+            account[i].minbalance += depamount;
+            account[i].transec[account[i].transecCount].deposit = depamount;
+            account[i].transec[account[i].transecCount].withdrawal = 0;
+            account[i].transec[account[i].transecCount].transectime = time(NULL);
+            account[i].transecCount++;
+            printf("Deposit Successful!\n");
+            break;
         }
     }
+    if(!found) printf("Account not found.\n");
 }
 
-void Mwithdraw(struct bank account[],int noofaccs){
+void Mwithdraw(struct bank account[]) {
     int Saccnumber;
     float withamount;
-    printf("Enter the account number :");
-    scanf("%d",&Saccnumber);
-    for (int i=0;i<noofaccs;i++){
-        if(account[i].accnumber==Saccnumber){
-            printf("Enter the amount to Withdraw :");
-            scanf("%f",&withamount);
-            if(withamount<=account[i].minbalance && (account[Saccnumber].minbalance-withamount)>=1000){
-                account[i].minbalance-=withamount;
-                account[i].transec[account[i].transecCount].withdrawal=withamount;
-                account[i].transec[account[i].transecCount].transectime=time(NULL);
+    printf("Enter the account number: ");
+    scanf("%d", &Saccnumber);
+
+    int found = 0;
+    for(int i = 0; i < totalAccounts; i++) {
+        if(account[i].accnumber == Saccnumber) {
+            found = 1;
+            printf("Enter the amount to withdraw: ");
+            scanf("%f", &withamount);
+
+            if(withamount <= account[i].minbalance && (account[i].minbalance - withamount) >= 1000) {
+                account[i].minbalance -= withamount;
+                account[i].transec[account[i].transecCount].withdrawal = withamount;
+                account[i].transec[account[i].transecCount].deposit = 0;
+                account[i].transec[account[i].transecCount].transectime = time(NULL);
                 account[i].transecCount++;
-                break;
+                printf("Withdrawal Successful!\n");
+            } else {
+                printf("Cannot withdraw this amount. Minimum balance limit reached.\n");
             }
-            else {
-                printf("The only amount that can be withdrawn is %f",(withamount-account[Saccnumber].minbalance));
-            }
-        }
-    }
-}
-void displayAcc(struct bank account[],int noofaccs){
-    int Sacc,Sindex,Stransec=0;
-    printf("Enter the Account number to display :");
-    scanf("%d",&Sacc);
-    for (int i=0;i<noofaccs;i++){
-        if(account[i].accnumber==Sacc){
-            Sindex=i;
             break;
-        }  
-    }
-    printf("Account Type :%s\n",account[Sindex].type);
-    printf("Total Balance :%f\n",account[Sindex].minbalance);
-    printf("Interest Rate:%.2f\n",account[Sindex].interestrate);
-    printf("Creation Date :%s\n",ctime(&account[Sindex].createdate));
-    for(int i=0;i<=account[Sindex].transecCount;i++){
-    if(account[Sindex].transecCount!=Stransec)
-    if(account[Sindex].transec[Stransec].deposit ==0){
-        printf("Withdrawn Amount :%.2f ",account[Sindex].transec[Stransec].withdrawal);
-        printf("On date :%s",ctime(&account[Sindex].transec[Stransec].transectime));
-        Stransec++;
-    }
-    if(account[Sindex].transec[Stransec].withdrawal==0){
-        printf("Withdrawn Amount :%.2f ",account[Sindex].transec[Stransec].withdrawal);
-        printf("On date :%s",ctime(&account[Sindex].transec[Stransec].transectime));
-        Stransec++;
-    }
-    }
-}
-int main() {
-    int noofaccs,menu=1;
-    printf("Enter the Number Of accounts in the Bank to reserve :");
-    scanf("%d",&noofaccs);
-    struct bank *account = malloc(noofaccs*sizeof(struct bank));
-    do
-    {
-        printf("\t----MIAN MENU----\n");
-        printf("(1) Create Account.\n(2) Display Account.\n(3) Deposit Amount.\n(4) Withdraw Amount.\n(5) Exit.\n");
-        switch (menu){
-            case 1: {
-                accountdata(account,noofaccs);
-                break;
-            }
-            case 2 :{
-                displayAcc(account,noofaccs);
-                break;
-            }
-            case 3 :{
-                Mdeposit(account,noofaccs);
-                break;
-            }
-            case 4 :{
-                Mwithdraw(account,noofaccs);
-                break;
-            }
-            case 5 :{
-                menu=0;
-                break;
-            }
-            default :{
-                printf("No such Option Found\n");
-            }
         }
-    } while (menu);
-    printf("Bank Destroyed");
+    }
+    if(!found) printf("Account not found.\n");
+}
+
+void displayAcc(struct bank account[]) {
+    int Sacc;
+    printf("Enter the Account number to display: ");
+    scanf("%d", &Sacc);
+
+    int found = 0;
+    for(int i = 0; i < totalAccounts; i++) {
+        if(account[i].accnumber == Sacc) {
+            found = 1;
+            printf("\nAccount Number: %d\n", account[i].accnumber);
+            printf("Account Type: %s\n", account[i].type);
+            printf("Balance: %.2f\n", account[i].minbalance);
+            printf("Interest Rate: %.2f\n", account[i].interestrate);
+            printf("Created On: %s", ctime(&account[i].createdate));
+
+            printf("\n--- Transactions ---\n");
+            for(int j = 0; j < account[i].transecCount; j++) {
+                if(account[i].transec[j].deposit != 0)
+                    printf("Deposited: %.2f on %s", account[i].transec[j].deposit, ctime(&account[i].transec[j].transectime));
+                if(account[i].transec[j].withdrawal != 0)
+                    printf("Withdrawn: %.2f on %s", account[i].transec[j].withdrawal, ctime(&account[i].transec[j].transectime));
+            }
+            break;
+        }
+    }
+    if(!found) printf("Account not found.\n");
+}
+
+int main() {
+    int menu;
+    struct bank *account = malloc(100 * sizeof(struct bank));
+
+    do {
+        printf("\n--- MAIN MENU ---\n");
+        printf("1. Create Account\n2. Display Account\n3. Deposit\n4. Withdraw\n5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &menu);
+
+        switch(menu) {
+            case 1: accountdata(account); break;
+            case 2: displayAcc(account); break;
+            case 3: Mdeposit(account); break;
+            case 4: Mwithdraw(account); break;
+            case 5: printf("Exiting Bank System.\n"); break;
+            default: printf("Invalid choice.\n"); break;
+        }
+    } while(menu != 5);
+
     free(account);
     return 0;
 }
