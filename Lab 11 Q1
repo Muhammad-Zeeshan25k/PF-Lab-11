@@ -1,0 +1,178 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int n;
+
+struct students {
+    char name[20];
+    int rollno;
+    float marks[3];
+    float percentage;
+    char grade[3];
+    int rank;
+};
+
+void input(struct students std[],int n){
+    float Imarks,totalmarks;
+    for(int i=0;i<n;i++){
+    totalmarks = 0; 
+    printf("Enter the name of Studnet %d :",i+1);
+    if(i!=0){getchar();}
+    fgets(std[i].name,sizeof(std[i].name),stdin);
+    std[i].name[strcspn(std[i].name,"\n")]='\0';
+    printf("Enter the Roll no for Student %d :",i+1);
+    scanf("%d",&std[i].rollno);
+    for(int j=0;j<3;j++){
+    printf("Enter marks for Student %d of Subject %d:",i+1,j+1);
+    scanf("%f",&Imarks);
+    if(Imarks>=0 && Imarks<=100){
+        std[i].marks[j]=Imarks;
+        totalmarks+=Imarks;
+    }
+    else if(Imarks<0){
+        printf("Marks can not be less than 0");
+        j--;
+    }
+    else {
+        printf("Marks can not be greater than 100");
+        j--;
+            }
+        }
+        std[i].percentage=(totalmarks/3);
+    }
+    Imarks=0;
+}
+
+void Grade(struct students std[],int n){
+    for (int i=0;i<n;i++){
+    if(std[i].percentage>89 && std[i].percentage<101){
+    strcpy(std[i].grade,"A+");
+    }
+    else if(std[i].percentage>79 && std[i].percentage<90){
+    strcpy(std[i].grade,"A");
+    }
+    else if(std[i].percentage>69 && std[i].percentage<80){
+    strcpy(std[i].grade,"B+");
+    }
+    else if(std[i].percentage>59 && std[i].percentage<70){
+    strcpy(std[i].grade,"B");
+    }
+    else if(std[i].percentage >49 && std[i].percentage<60){
+    strcpy(std[i].grade,"C");
+    }
+    else if(std[i].percentage<50){
+    strcpy(std[i].grade,"F");
+    }
+    else {
+       printf("Error Found!");
+    }
+}
+}
+
+void findrank(struct students std[],int n) {
+    for (int i=0;i<n;i++) {
+        int rank=1;
+        for (int j=0;j<n;j++) {
+            if (std[j].percentage>std[i].percentage) {
+                rank++;
+            }
+        }
+        std[i].rank=rank;
+    }
+}
+
+
+void findstd(struct students std[],int n){
+    int method,sindex=-1,roll;
+    char search[20],sgrade[3];
+    printf("By name (1).\nBy Roll number (2).\nBy Grade (3).\n");
+    printf("Select the input type to find the student :");
+    scanf("%d",&method);
+    switch(method){
+
+
+        case 1 :{
+        printf("\nEnter the name to Search :");
+        getchar(); 
+        fgets(search,sizeof(search),stdin);
+        search[strcspn(search,"\n")]='\0';
+            for(int i=0;i<n;i++){
+                if(strcmp(search,std[i].name)==0){
+                    sindex=i;
+                    break;
+                }
+            }
+            break;
+        }
+
+        case 2 :{
+            printf("Enter the Student's Roll no to find :");
+            scanf("%d",&roll);
+            for (int i=0;i<n;i++){
+                if(roll==std[i].rollno){
+                    sindex=i;
+                    break;
+                }
+            }
+            break;
+        }
+
+        case 3 :{
+        printf("Enter the grade to find :");
+        getchar(); 
+        fgets(sgrade,sizeof(sgrade),stdin);
+        sgrade[strcspn(sgrade,"\n")]='\0';
+        for(int i=0;i<n;i++){
+        if(strcmp(sgrade,std[i].grade)==0){
+            sindex=i;
+            break;
+        }
+    }
+            break;
+        }
+        default :{
+            printf("Wrong Input!");
+            break;
+        }
+    }
+    if(sindex!=-1){
+        printf("\nName :%s",std[sindex].name);
+        printf("\nRoll No :%d",std[sindex].rollno);
+        printf("\nPercentage :%.2f",std[sindex].percentage);
+        printf("\nGrade :%s",std[sindex].grade);
+        printf("\nRank :%d",std[sindex].rank);
+        }
+}
+
+int main() { 
+
+    int menu=1;
+    printf("Enter the number of students :");
+    scanf("%d",&n);
+    struct students *std = malloc(n*sizeof(struct students));
+    printf("\tEnter Data\n");
+    input(std,n);
+    Grade(std,n);
+    findrank(std,n);
+    do
+    {    
+    printf("\n\t----MAIN MENU----\n");
+    printf("(1) Find Student.\n(2) Exit\n");
+    scanf("%d",&menu);
+    switch (menu)
+    {
+    case 1 :
+        findstd(std,n);
+        break;
+    case 2 :{
+        menu=0;
+        break;
+    }
+    default:
+        break;
+    }
+    } while (menu);
+    free(std);
+    return 0;
+}
